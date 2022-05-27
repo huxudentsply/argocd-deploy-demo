@@ -57,7 +57,10 @@ kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/service-weight: ''
+  name: test-web2-ingress
+  namespace: test
 spec:
+  ingressClassName: nginx
   rules:
     - host: test-web2.cef913dfc231b46e288383b191b78780d.cn-shanghai.alicontainer.com
       http:
@@ -69,3 +72,4 @@ spec:
                   number: 80
             path: /
             pathType: ImplementationSpecific
+
