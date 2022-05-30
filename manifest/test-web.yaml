@@ -1,8 +1,8 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: web
-  namespace: test
+  name: nginx-server
+  namespace: dev
   annotations:       # 记录回滚参数
     kubernetes.io/change-cause: "web.v1-nginx-1.19"   #记录到revision中的内容，记录版本号
 spec:
@@ -10,7 +10,7 @@ spec:
   revisionHistoryLimit: 10 # RS历史版本保存数量
   selector:
     matchLabels:
-      app: web
+      app: nginx-server
   strategy:
     rollingUpdate:
       maxSurge: 25%             # 滚动更新过程最大pod副本数
@@ -19,10 +19,10 @@ spec:
   template:
     metadata:
       labels:
-        app: web # Pod副本的标签
+        app: nginx-server # Pod副本的标签
     spec:
       containers:
-      - name: web
+      - name: nginx-server
         image: nginx:1.16
         readinessProbe:          # 存活检查,如果失败，将杀死容器，来重启
           httpGet:
@@ -40,8 +40,8 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: web
-  name: web
+    app: nginx-server
+  name: nginx-server
 spec:
   type: NodePort # 服务类型
   ports:
@@ -50,24 +50,24 @@ spec:
     targetPort: 80 # 容器端口
     nodePort: 30019  # 对外暴露的端口，可以指定
   selector:
-    app: web # 指定关联Pod的标签
+    app: nginx-server # 指定关联Pod的标签
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
   annotations:
     nginx.ingress.kubernetes.io/service-weight: ''
-  name: test-web-ingress
-  namespace: test
+  name: nginx-server-ingress
+  namespace: dev
 spec:
   ingressClassName: nginx
   rules:
-    - host: test-web.cef913dfc231b46e288383b191b78780d.cn-shanghai.alicontainer.com
+    - host: nginx-server.cef913dfc231b46e288383b191b78780d.cn-shanghai.alicontainer.com
       http:
         paths:
           - backend:
               service:
-                name: web
+                name: nginx-server
                 port:
                   number: 80
             path: /
